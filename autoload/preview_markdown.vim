@@ -7,6 +7,7 @@ set cpo&vim
 
 let s:preview_buf_nr = -1
 let s:preview_job_id = -1
+let s:preview_view = -1
 
 function! s:echo_err(msg) abort
   echohl ErrorMsg
@@ -28,12 +29,16 @@ function! s:stop_job() abort
     if s:jobid isnot# v:null
       call jobstop(s:jobid)
       if bufexists(s:preview_buf_nr)
+          call win_execute(bufwinid(s:preview_buf_nr), 'let s:preview_view = winsaveview()')
           execute "bd! " . s:preview_buf_nr
       endif
     endif
   else
     let s:jobid = term_getjob(bufnr('%'))
     if s:jobid isnot# v:null
+      if bufexists(s:preview_buf_nr)
+        call win_execute(bufwinid(s:preview_buf_nr), 'let s:preview_view = winsaveview()')
+      endif
       call job_stop(s:jobid)
       let c = 0
       while job_status(s:jobid) is# 'run'
@@ -152,6 +157,13 @@ function! preview_markdown#preview(...) abort
     call s:stop_job()
     let s:preview_buf_nr = term_start(cmd, opt)
     exe printf('tnoremap <buffer> <silent> q %s:bw! \| call <SID>stop_job()<CR>', &termwinkey isnot# '' ? &termwinkey : '<C-w>')
+  endif
+
+  if has('nvim')
+    if s:preview_view isnot# -1
+      call jobwait([s:preview_job_id], 400)
+      call win_execute(bufwinid(s:preview_buf_nr), 'call winrestview(s:preview_view)')
+    endif
   endif
 endfunction
 
