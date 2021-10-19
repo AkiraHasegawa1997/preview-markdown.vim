@@ -30,7 +30,7 @@ function! s:stop_job() abort
       call jobstop(s:jobid)
       if bufexists(s:preview_buf_nr)
           call win_execute(bufwinid(s:preview_buf_nr), 'let s:preview_view = winsaveview()')
-          execute "bd! " . s:preview_buf_nr
+          execute "bw! " . s:preview_buf_nr
       endif
     endif
   else
