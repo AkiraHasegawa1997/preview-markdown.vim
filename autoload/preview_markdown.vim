@@ -26,7 +26,7 @@ endfunction
 function! s:stop_job() abort
   if has('nvim')
     let s:jobid = s:preview_job_id
-    if s:jobid isnot# v:null
+    if ((s:jobid isnot# v:null) && (s:jobid !=# 'no process'))
       call jobstop(s:jobid)
       if bufexists(s:preview_buf_nr)
           call win_execute(bufwinid(s:preview_buf_nr), 'let s:preview_view = winsaveview()')
@@ -35,7 +35,7 @@ function! s:stop_job() abort
     endif
   else
     let s:jobid = term_getjob(bufnr('%'))
-    if s:jobid isnot# v:null
+    if ((s:jobid isnot# v:null) && (s:jobid !=# 'no process'))
       if bufexists(s:preview_buf_nr)
         call win_execute(bufwinid(s:preview_buf_nr), 'let s:preview_view = winsaveview()')
       endif
